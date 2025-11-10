@@ -16,10 +16,8 @@ export function AssistantAvatar({
   isSpeaking = false,
   isListening = false,
   expression = 'idle',
-  position = { x: 50, y: 50 },
-  onPositionChange 
+  position = { x: 0, y: 0 }
 }: AssistantAvatarProps) {
-  const [isDragging, setIsDragging] = useState(false);
   const [currentExpression, setCurrentExpression] = useState<Expression>(expression);
 
   useEffect(() => {
@@ -91,24 +89,9 @@ export function AssistantAvatar({
   };
 
   return (
-    <motion.div
-      drag
-      dragMomentum={false}
-      dragElastic={0.1}
-      onDragStart={() => setIsDragging(true)}
-      onDragEnd={(e, info) => {
-        setIsDragging(false);
-        onPositionChange?.({ x: info.point.x, y: info.point.y });
-      }}
-      style={{ 
-        position: 'absolute',
-        left: position.x,
-        top: position.y,
-        touchAction: 'none'
-      }}
-      className="cursor-move z-40"
-    >
-      <div className="relative">
+    <div className="relative inline-block">
+      <div className="relative"
+      >
         {/* Glow effect */}
         <motion.div 
           className="absolute inset-0 rounded-full bg-gradient-primary blur-2xl opacity-50"
@@ -158,6 +141,6 @@ export function AssistantAvatar({
           Level 1
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 }
