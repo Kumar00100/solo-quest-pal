@@ -5,6 +5,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Mail, Lock, User, Calendar, Briefcase } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
+import { useNavigate } from 'react-router-dom';
 
 interface AuthModalProps {
   open: boolean;
@@ -21,11 +24,63 @@ export function AuthModal({ open, onOpenChange, mode }: AuthModalProps) {
     age: '',
     category: 'student',
   });
+  const [loading, setLoading] = useState(false);
+  const { toast } = useToast();
+  const navigate = useNavigate();
 
-  const handleSubmit = (e: React.FormEvent, type: 'login' | 'signup') => {
+  const handleSubmit = async (e: React.FormEvent, type: 'login' | 'signup') => {
     e.preventDefault();
-    // TODO: Implement actual auth logic
-    console.log('Auth submit:', type, formData);
+    setLoading(true);
+
+    try {
+      if (type === 'signup') {
+        const { error } = await supabase.auth.signUp({
+          email: formData.email,
+          password: formData.password,
+          options: {
+            emailRedirectTo: `${window.location.origin}/`,
+            data: {
+              name: formData.name,
+              age: formData.age,
+              category: formData.category,
+            },
+          },
+        });
+
+        if (error) throw error;
+
+        toast({
+          title: "Account created!",
+          description: "Welcome to SoloLevel. Redirecting...",
+        });
+        
+        onOpenChange(false);
+        navigate('/assistant');
+      } else {
+        const { error } = await supabase.auth.signInWithPassword({
+          email: formData.email,
+          password: formData.password,
+        });
+
+        if (error) throw error;
+
+        toast({
+          title: "Welcome back!",
+          description: "Login successful.",
+        });
+        
+        onOpenChange(false);
+        navigate('/assistant');
+      }
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Authentication failed. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -75,8 +130,8 @@ export function AuthModal({ open, onOpenChange, mode }: AuthModalProps) {
                 </div>
               </div>
 
-              <Button type="submit" className="w-full bg-gradient-primary hover:shadow-glow">
-                Login
+              <Button type="submit" className="w-full bg-gradient-primary hover:shadow-glow" disabled={loading}>
+                {loading ? 'Loading...' : 'Login'}
               </Button>
             </form>
           </TabsContent>
@@ -162,8 +217,8 @@ export function AuthModal({ open, onOpenChange, mode }: AuthModalProps) {
                 </div>
               </div>
 
-              <Button type="submit" className="w-full bg-gradient-primary hover:shadow-glow">
-                Sign Up
+              <Button type="submit" className="w-full bg-gradient-primary hover:shadow-glow" disabled={loading}>
+                {loading ? 'Loading...' : 'Sign Up'}
               </Button>
             </form>
           </TabsContent>
