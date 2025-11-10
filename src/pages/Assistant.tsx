@@ -3,13 +3,19 @@ import { TopBar } from '@/components/TopBar';
 import { AssistantAvatar } from '@/components/AssistantAvatar';
 import { VoiceInput } from '@/components/VoiceInput';
 import { TasksSlideOver } from '@/components/TasksSlideOver';
+import { ProfileModal } from '@/components/ProfileModal';
+import { DashboardModal } from '@/components/DashboardModal';
+import { WalkingTracker } from '@/components/WalkingTracker';
 import { Button } from '@/components/ui/button';
-import { Mic, MicOff } from 'lucide-react';
+import { Mic, MicOff, User, LayoutDashboard, MapPin } from 'lucide-react';
 
 const Assistant = () => {
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [isListening, setIsListening] = useState(false);
-  const [avatarPosition, setAvatarPosition] = useState({ x: 100, y: 200 });
+  const [avatarPosition, setAvatarPosition] = useState({ x: window.innerWidth / 2 - 60, y: 80 });
+  const [profileOpen, setProfileOpen] = useState(false);
+  const [dashboardOpen, setDashboardOpen] = useState(false);
+  const [walkingTrackerOpen, setWalkingTrackerOpen] = useState(false);
   const [messages, setMessages] = useState<Array<{ role: 'user' | 'assistant'; text: string }>>([
     { role: 'assistant', text: 'Hello! I\'m your SoloLevel assistant. How can I help you level up today?' }
   ]);
@@ -61,8 +67,33 @@ const Assistant = () => {
         <div className="absolute bottom-0 left-0 w-96 h-96 bg-secondary/10 rounded-full blur-3xl opacity-20" />
       </div>
 
+      {/* Quick action buttons */}
+      <div className="fixed top-20 right-4 z-40 flex flex-col gap-2">
+        <Button
+          onClick={() => setProfileOpen(true)}
+          size="icon"
+          className="rounded-full w-12 h-12 bg-card/80 backdrop-blur-md border border-primary/20 hover:bg-card"
+        >
+          <User className="w-5 h-5" />
+        </Button>
+        <Button
+          onClick={() => setDashboardOpen(true)}
+          size="icon"
+          className="rounded-full w-12 h-12 bg-card/80 backdrop-blur-md border border-primary/20 hover:bg-card"
+        >
+          <LayoutDashboard className="w-5 h-5" />
+        </Button>
+        <Button
+          onClick={() => setWalkingTrackerOpen(true)}
+          size="icon"
+          className="rounded-full w-12 h-12 bg-card/80 backdrop-blur-md border border-primary/20 hover:bg-card"
+        >
+          <MapPin className="w-5 h-5" />
+        </Button>
+      </div>
+
       {/* Main content area */}
-      <div className="relative pt-20 min-h-screen pb-32">
+      <div className="relative pt-32 min-h-screen pb-32">
         {/* Draggable Avatar */}
         <AssistantAvatar 
           isSpeaking={isSpeaking}
@@ -90,7 +121,7 @@ const Assistant = () => {
         </Button>
 
         {/* Chat messages */}
-        <div className="container mx-auto px-4 max-w-3xl pt-8">
+        <div className="container mx-auto px-4 max-w-3xl">
           <div className="space-y-4">
             {messages.map((msg, idx) => (
               <div
@@ -125,6 +156,11 @@ const Assistant = () => {
 
         {/* Tasks Slide-over */}
         <TasksSlideOver />
+
+        {/* Modals */}
+        <ProfileModal open={profileOpen} onOpenChange={setProfileOpen} />
+        <DashboardModal open={dashboardOpen} onOpenChange={setDashboardOpen} />
+        <WalkingTracker open={walkingTrackerOpen} onOpenChange={setWalkingTrackerOpen} />
       </div>
     </div>
   );
