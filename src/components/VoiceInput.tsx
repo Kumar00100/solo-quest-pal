@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Mic, MicOff, Send } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 
 interface VoiceInputProps {
   onSend: (message: string) => void;
@@ -10,13 +10,14 @@ interface VoiceInputProps {
 }
 
 export function VoiceInput({ onSend, isListening = false, onToggleListening }: VoiceInputProps) {
-  const [input, setInput] = useState('');
+  const [text, setText] = useState('');
   const [isExpanded, setIsExpanded] = useState(false);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const handleSend = () => {
-    if (input.trim()) {
-      onSend(input);
-      setInput('');
+    if (text.trim()) {
+      onSend(text);
+      setText('');
       setIsExpanded(false);
     }
   };
@@ -28,50 +29,77 @@ export function VoiceInput({ onSend, isListening = false, onToggleListening }: V
     }
   };
 
+  useEffect(() => {
+    if (isExpanded && textareaRef.current) {
+      textareaRef.current.focus();
+    }
+  }, [isExpanded]);
+
   return (
-    <div className="w-full px-4 py-4">
-      <div className="container mx-auto max-w-3xl">
-        <div className={`
-          bg-card/80 backdrop-blur-md border border-primary/20 rounded-2xl 
-          shadow-glow transition-all duration-300
-          ${isExpanded ? 'p-4' : 'p-2'}
-        `}>
-          <div className="flex items-center gap-3">
+    <div className={`
+      fixed bottom-24 left-1/2 -translate-x-1/2 z-30
+      transition-all duration-300 ease-out
+      ${isExpanded ? 'w-[calc(100%-2rem)] max-w-2xl' : 'w-64'}
+    `}>
+      <div className={`
+        relative bg-card border border-primary/30 rounded-3xl overflow-hidden
+        shadow-glow
+        ${isExpanded ? 'p-4' : 'p-2'}
+      `}>
+        <div className="relative flex items-center gap-2">
+          <Textarea
+            ref={textareaRef}
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            onFocus={() => setIsExpanded(true)}
+            onBlur={() => !text && setIsExpanded(false)}
+            onKeyPress={handleKeyPress}
+            placeholder={isExpanded ? "Type your message or use voice..." : "Tap to chat..."}
+            className={`
+              resize-none bg-transparent border-0 focus-visible:ring-0 text-foreground
+              placeholder:text-muted-foreground
+              ${isExpanded ? 'min-h-[100px]' : 'h-10'}
+            `}
+            style={{ 
+              paddingRight: '80px',
+              scrollbarWidth: 'thin'
+            }}
+          />
+          
+          <div className="absolute right-2 top-2 flex items-center gap-2">
             <Button
-              onClick={onToggleListening}
               size="icon"
+              variant="ghost"
+              onClick={onToggleListening}
               className={`
-                rounded-full w-12 h-12 flex-shrink-0 transition-all
+                rounded-full h-10 w-10 transition-all
                 ${isListening 
-                  ? 'bg-destructive hover:bg-destructive/90 animate-pulse-glow' 
-                  : 'bg-gradient-primary hover:shadow-glow-lg'
+                  ? 'bg-destructive hover:bg-destructive/90 text-destructive-foreground animate-pulse-glow' 
+                  : 'bg-primary/10 hover:bg-primary/20 text-primary'
                 }
               `}
             >
               {isListening ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
             </Button>
-
-            <Input
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyPress={handleKeyPress}
-              onFocus={() => setIsExpanded(true)}
-              onBlur={() => !input && setIsExpanded(false)}
-              placeholder="Type your message or use voice..."
-              className="flex-1 bg-transparent border-none focus-visible:ring-0 focus-visible:ring-offset-0"
-            />
-
-            {input && (
+            
+            {text && (
               <Button
-                onClick={handleSend}
                 size="icon"
-                className="rounded-full w-10 h-10 flex-shrink-0 bg-gradient-primary hover:shadow-glow-lg"
+                onClick={handleSend}
+                className="rounded-full h-10 w-10 bg-gradient-primary hover:shadow-glow"
               >
-                <Send className="w-4 h-4" />
+                <Send className="w-5 h-5" />
               </Button>
             )}
           </div>
         </div>
+
+        {isListening && (
+          <div className="mt-2 flex items-center gap-2 text-xs text-destructive">
+            <div className="w-2 h-2 rounded-full bg-destructive animate-pulse" />
+            Listening...
+          </div>
+        )}
       </div>
     </div>
   );
