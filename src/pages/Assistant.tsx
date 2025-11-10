@@ -12,7 +12,8 @@ import { Mic, MicOff, User, LayoutDashboard, MapPin } from 'lucide-react';
 const Assistant = () => {
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [isListening, setIsListening] = useState(false);
-  const [avatarPosition, setAvatarPosition] = useState({ x: window.innerWidth / 2 - 60, y: 80 });
+  const [expression, setExpression] = useState<'idle' | 'speaking' | 'listening' | 'thinking' | 'happy'>('idle');
+  const [avatarPosition, setAvatarPosition] = useState({ x: window.innerWidth / 2 - 96, y: 80 });
   const [profileOpen, setProfileOpen] = useState(false);
   const [dashboardOpen, setDashboardOpen] = useState(false);
   const [walkingTrackerOpen, setWalkingTrackerOpen] = useState(false);
@@ -35,15 +36,23 @@ const Assistant = () => {
 
   const handleSendMessage = (text: string) => {
     setMessages([...messages, { role: 'user', text }]);
+    setExpression('thinking');
     
-    // Simulate AI response
+    // Simulate AI processing
     setTimeout(() => {
-      setIsSpeaking(true);
-      const response = "I understand you want to work on that. Let me help you create a plan!";
-      setMessages(prev => [...prev, { role: 'assistant', text: response }]);
-      
-      // Simulate speech duration
-      setTimeout(() => setIsSpeaking(false), 3000);
+      setExpression('happy');
+      setTimeout(() => {
+        setIsSpeaking(true);
+        setExpression('speaking');
+        const response = "I understand you want to work on that. Let me help you create a plan!";
+        setMessages(prev => [...prev, { role: 'assistant', text: response }]);
+        
+        // Simulate speech duration
+        setTimeout(() => {
+          setIsSpeaking(false);
+          setExpression('idle');
+        }, 3000);
+      }, 500);
     }, 1000);
   };
 
@@ -97,6 +106,8 @@ const Assistant = () => {
         {/* Draggable Avatar */}
         <AssistantAvatar 
           isSpeaking={isSpeaking}
+          isListening={isListening}
+          expression={expression}
           position={avatarPosition}
           onPositionChange={handlePositionChange}
         />
