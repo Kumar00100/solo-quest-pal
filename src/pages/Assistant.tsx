@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { TopBar } from '@/components/TopBar';
 import { AssistantAvatar } from '@/components/AssistantAvatar';
 import { VoiceInput } from '@/components/VoiceInput';
@@ -6,56 +6,54 @@ import { TasksSlideOver } from '@/components/TasksSlideOver';
 import { ProfileModal } from '@/components/ProfileModal';
 import { DashboardModal } from '@/components/DashboardModal';
 import { WalkingTracker } from '@/components/WalkingTracker';
+import { ChatHistoryModal } from '@/components/ChatHistoryModal';
 import { Button } from '@/components/ui/button';
-import { Mic, MicOff, User, LayoutDashboard, MapPin, Keyboard } from 'lucide-react';
+import { User, LayoutDashboard, MapPin, Keyboard, Mic, MicOff } from 'lucide-react';
+
+type Expression = 'idle' | 'speaking' | 'thinking' | 'happy';
 
 const Assistant = () => {
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [isListening, setIsListening] = useState(false);
-  const [avatarPosition, setAvatarPosition] = useState({ x: window.innerWidth / 2 - 60, y: 80 });
+  const [expression, setExpression] = useState<Expression>('idle');
   const [profileOpen, setProfileOpen] = useState(false);
   const [dashboardOpen, setDashboardOpen] = useState(false);
   const [walkingTrackerOpen, setWalkingTrackerOpen] = useState(false);
+  const [historyOpen, setHistoryOpen] = useState(false);
   const [showInput, setShowInput] = useState(false);
   const [messages, setMessages] = useState<Array<{ role: 'user' | 'assistant'; text: string }>>([
     { role: 'assistant', text: 'Hello! I\'m your SoloLevel assistant. How can I help you level up today?' }
   ]);
 
-  // Load saved avatar position
-  useEffect(() => {
-    const saved = localStorage.getItem('avatarPosition');
-    if (saved) {
-      setAvatarPosition(JSON.parse(saved));
-    }
-  }, []);
-
-  const handlePositionChange = (position: { x: number; y: number }) => {
-    setAvatarPosition(position);
-    localStorage.setItem('avatarPosition', JSON.stringify(position));
-  };
-
   const handleSendMessage = (text: string) => {
     setMessages([...messages, { role: 'user', text }]);
+    setExpression('thinking');
     
-    // Simulate AI response
+    // Simulate AI response with realistic expressions
     setTimeout(() => {
+      setExpression('speaking');
       setIsSpeaking(true);
       const response = "I understand you want to work on that. Let me help you create a plan!";
       setMessages(prev => [...prev, { role: 'assistant', text: response }]);
       
-      // Simulate speech duration
-      setTimeout(() => setIsSpeaking(false), 3000);
-    }, 1000);
+      // Simulate speech duration with lip sync
+      setTimeout(() => {
+        setIsSpeaking(false);
+        setExpression('happy');
+        
+        // Return to idle after a moment
+        setTimeout(() => setExpression('idle'), 1500);
+      }, 3000);
+    }, 800);
   };
 
   const handleToggleListening = () => {
     setIsListening(!isListening);
-    // TODO: Implement actual speech recognition
-  };
-
-  const handleSecondaryMic = () => {
-    setIsListening(!isListening);
-    // TODO: Implement push-to-talk or continuous listening
+    if (!isListening) {
+      setExpression('thinking');
+    } else {
+      setExpression('idle');
+    }
   };
 
   return (
@@ -95,31 +93,12 @@ const Assistant = () => {
 
       {/* Main content area */}
       <div className="relative pt-32 min-h-screen pb-32">
-        {/* Draggable Avatar */}
+        {/* Avatar */}
         <AssistantAvatar 
           isSpeaking={isSpeaking}
-          position={avatarPosition}
-          onPositionChange={handlePositionChange}
+          isListening={isListening}
+          expression={expression}
         />
-
-        {/* Secondary mic control under avatar */}
-        <Button
-          onClick={handleSecondaryMic}
-          size="icon"
-          className={`
-            fixed rounded-full w-14 h-14 shadow-glow transition-all z-30
-            ${isListening 
-              ? 'bg-destructive hover:bg-destructive/90 animate-pulse-glow' 
-              : 'bg-gradient-primary hover:shadow-glow-lg'
-            }
-          `}
-          style={{
-            left: avatarPosition.x + 40,
-            top: avatarPosition.y + 140,
-          }}
-        >
-          {isListening ? <MicOff className="w-6 h-6" /> : <Mic className="w-6 h-6" />}
-        </Button>
 
         {/* Chat messages */}
         <div className="container mx-auto px-4 max-w-3xl">
@@ -187,6 +166,7 @@ const Assistant = () => {
             onSend={handleSendMessage}
             isListening={isListening}
             onToggleListening={handleToggleListening}
+            onOpenHistory={() => setHistoryOpen(true)}
           />
         )}
 
@@ -197,6 +177,7 @@ const Assistant = () => {
         <ProfileModal open={profileOpen} onOpenChange={setProfileOpen} />
         <DashboardModal open={dashboardOpen} onOpenChange={setDashboardOpen} />
         <WalkingTracker open={walkingTrackerOpen} onOpenChange={setWalkingTrackerOpen} />
+        <ChatHistoryModal open={historyOpen} onOpenChange={setHistoryOpen} messages={messages} />
       </div>
     </div>
   );
