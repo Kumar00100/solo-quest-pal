@@ -7,7 +7,7 @@ import { ProfileModal } from '@/components/ProfileModal';
 import { DashboardModal } from '@/components/DashboardModal';
 import { WalkingTracker } from '@/components/WalkingTracker';
 import { Button } from '@/components/ui/button';
-import { Mic, MicOff, User, LayoutDashboard, MapPin } from 'lucide-react';
+import { Mic, MicOff, User, LayoutDashboard, MapPin, Keyboard } from 'lucide-react';
 
 const Assistant = () => {
   const [isSpeaking, setIsSpeaking] = useState(false);
@@ -16,6 +16,7 @@ const Assistant = () => {
   const [profileOpen, setProfileOpen] = useState(false);
   const [dashboardOpen, setDashboardOpen] = useState(false);
   const [walkingTrackerOpen, setWalkingTrackerOpen] = useState(false);
+  const [showInput, setShowInput] = useState(false);
   const [messages, setMessages] = useState<Array<{ role: 'user' | 'assistant'; text: string }>>([
     { role: 'assistant', text: 'Hello! I\'m your SoloLevel assistant. How can I help you level up today?' }
   ]);
@@ -147,12 +148,47 @@ const Assistant = () => {
           </div>
         </div>
 
-        {/* Voice Input */}
-        <VoiceInput
-          onSend={handleSendMessage}
-          isListening={isListening}
-          onToggleListening={handleToggleListening}
-        />
+        {/* Input Controls */}
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 flex items-center gap-3">
+          {/* Keyboard toggle button */}
+          <Button
+            onClick={() => setShowInput(!showInput)}
+            size="icon"
+            className={`
+              rounded-full w-14 h-14 shadow-glow transition-all
+              ${showInput 
+                ? 'bg-primary hover:bg-primary/90' 
+                : 'bg-card/80 backdrop-blur-md border border-primary/20 hover:bg-card'
+              }
+            `}
+          >
+            <Keyboard className="w-6 h-6" />
+          </Button>
+
+          {/* Mic button */}
+          <Button
+            onClick={handleToggleListening}
+            size="icon"
+            className={`
+              rounded-full w-14 h-14 shadow-glow transition-all
+              ${isListening 
+                ? 'bg-destructive hover:bg-destructive/90 animate-pulse-glow' 
+                : 'bg-gradient-primary hover:shadow-glow-lg'
+              }
+            `}
+          >
+            {isListening ? <MicOff className="w-6 h-6" /> : <Mic className="w-6 h-6" />}
+          </Button>
+        </div>
+
+        {/* Voice Input - only shown when keyboard is toggled */}
+        {showInput && (
+          <VoiceInput
+            onSend={handleSendMessage}
+            isListening={isListening}
+            onToggleListening={handleToggleListening}
+          />
+        )}
 
         {/* Tasks Slide-over */}
         <TasksSlideOver />
