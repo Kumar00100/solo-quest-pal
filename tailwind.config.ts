@@ -24,6 +24,10 @@ export default {
           foreground: "hsl(var(--primary-foreground))",
           glow: "hsl(var(--primary-glow))",
         },
+        cardRed: "hsl(var(--card-red))",
+        cardBlue: "hsl(var(--card-blue))",
+        cardTeal: "hsl(var(--card-teal))",
+        cardOrange: "hsl(var(--card-orange))",
         secondary: {
           DEFAULT: "hsl(var(--secondary))",
           foreground: "hsl(var(--secondary-foreground))",
