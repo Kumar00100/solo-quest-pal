@@ -19,9 +19,15 @@ All colors MUST be HSL.
     --popover-foreground: 210 40% 98%;
 
     /* Electric blue primary */
-    --primary: 217 91% 60%;
+    --primary: 200 100% 50%;
     --primary-foreground: 210 40% 98%;
-    --primary-glow: 217 100% 70%;
+    --primary-glow: 200 100% 60%;
+
+    /* Action card colors */
+    --card-red: 350 85% 60%;
+    --card-blue: 210 100% 60%;
+    --card-teal: 175 70% 50%;
+    --card-orange: 25 95% 60%;
 
     /* Purple accent */
     --secondary: 270 70% 60%;
